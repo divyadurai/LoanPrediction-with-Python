@@ -1,0 +1,201 @@
+import numpy as np
+import pandas as pd
+import os
+os.chdir('D:\\PYTHON\\LoanPrediction')
+#Import the file
+train=pd.read_csv('train.csv')
+test=pd.read_csv('test.csv')
+
+#Audit the file
+train['Dependents'].isna().value_counts()
+train_missing= train.isna().sum()
+
+### Impute for gender
+test_missing=test.isna().sum()
+train['Gender'].value_counts()
+new_gender = np.where(train['Gender'].isnull(),'Male',train['Gender'])
+train['Gender']=new_gender
+train['Gender'].isnull().value_counts()
+
+### Impute missing values for Married
+
+train['Married'].value_counts()
+new_Married = np.where(train['Married'].isnull(),'Yes',train['Married'])
+train['Married']=new_Married
+train['Married'].isnull().value_counts()
+
+
+## Replace and impute missing values for Dependents
+train['Dependents'].value_counts()
+train['Dependents']= train ['Dependents'].replace('3+',3)
+train['Dependents']= train ['Dependents'].replace('0',0)
+train['Dependents']= np.where(train ['Dependents'].isnull(),0,train ['Dependents'])
+train['Dependents'] = pd.to_numeric(train['Dependents'])
+train['Dependents'].dtypes
+
+## Impute missing values for Self_Employed
+train['Self_Employed'].value_counts()
+train['Self_Employed']= np.where(train ['Self_Employed'].isnull(),'No',train ['Self_Employed'])
+train['Self_Employed'].isnull().value_counts()
+
+# Impute missing for LoanAmount
+train['LoanAmount'].value_counts()
+train['LoanAmount']= np.where(train ['LoanAmount'].isnull(),
+     np.nanmedian(train['LoanAmount']),train ['LoanAmount'])
+train['LoanAmount'].isnull().value_counts()
+
+## Impute missing values for Loan_Amount_Term
+train['Loan_Amount_Term'].value_counts()
+train['Loan_Amount_Term']= np.where(train ['Loan_Amount_Term'].isnull(),np.nanmedian(train['Loan_Amount_Term']),train ['Loan_Amount_Term'])
+train['Loan_Amount_Term'].isnull().sum()
+
+## Impute missing values for Credit_History
+train['Credit_History'].value_counts()
+train['Credit_History']= np.where(train ['Credit_History'].isnull(),1.0,train ['Credit_History'])
+
+from sklearn.preprocessing import LabelEncoder
+
+LE=LabelEncoder()
+train['Gender']= LE.fit_transform(train['Gender'])
+train['Gender'].value_counts()
+
+train['Married']= LE.fit_transform(train['Married'])
+train['Married'].value_counts()
+
+train['Education']= LE.fit_transform(train['Education'])
+train['Education'].value_counts()
+
+train['Self_Employed']= LE.fit_transform(train['Self_Employed'])
+train['Self_Employed'].value_counts()
+
+train['Property_Area']= LE.fit_transform(train['Property_Area'])
+train['Property_Area'].value_counts()
+
+## Divide the data into X & y
+Y=train['Loan_Status']
+X=train.iloc[:,1:11]
+
+#logistic regression
+
+from sklearn.linear_model import LogisticRegression
+
+LR = LogisticRegression()
+LR.fit(X,Y)
+LR.coef_
+LR.intercept_
+Preds_LR=LR.predict(X)
+
+import pandas as pd
+
+Preds_LR = pd.DataFrame(Preds_LR)
+
+from sklearn.metrics import confusion_matrix
+cm_lr = confusion_matrix(Y,Preds_LR )
+
+## Output 84+108+8+414 = 614
+## 84+414== 498
+## 498/614 = 81.10%
+
+##Support vector machine
+
+from sklearn import svm
+
+vm= svm.SVC(gamma='scale')
+vm.fit(X,Y)
+
+Preds_vm= vm.predict(X)
+Preds_vm = pd.DataFrame(Preds_vm)
+
+from sklearn.metrics import confusion_matrix
+cm_vm = confusion_matrix(Y,Preds_vm )
+
+#Output 84.5%
+
+## Random Forest
+
+from sklearn.ensemble import RandomForestClassifier
+
+RF=RandomForestClassifier(n_estimators=500)
+RF.fit(X,Y)
+
+Preds_RF = RF.predict(X)
+
+Preds_RF = pd.DataFrame(Preds_RF)
+
+from sklearn.metrics import confusion_matrix
+cm_lr = confusion_matrix(Y,Preds_RF )
+
+
+
+##### Working on test data
+
+#Audit the file
+test['Dependents'].isna().value_counts()
+test_missing= test.isna().sum()
+
+### Impute for gender
+test_missing=test.isna().sum()
+test['Gender'].value_counts()
+new_gender = np.where(test['Gender'].isnull(),'Male',test['Gender'])
+test['Gender']=new_gender
+test['Gender'].isnull().value_counts()
+
+### Impute missing values for Married
+
+test['Married'].value_counts()
+new_Married = np.where(test['Married'].isnull(),'Yes',test['Married'])
+test['Married']=new_Married
+test['Married'].isnull().value_counts()
+
+
+## Replace and impute missing values for Dependents
+test['Dependents'].value_counts()
+test['Dependents']= test ['Dependents'].replace('3+',3)
+test['Dependents']= test ['Dependents'].replace('0',0)
+test['Dependents']= np.where(test ['Dependents'].isnull(),0,test ['Dependents'])
+test['Dependents'] = pd.to_numeric(test['Dependents'])
+test['Dependents'].dtypes
+
+## Impute missing values for Self_Employed
+test['Self_Employed'].value_counts()
+test['Self_Employed']= np.where(test ['Self_Employed'].isnull(),'No',test ['Self_Employed'])
+test['Self_Employed'].isnull().value_counts()
+
+# Impute missing for LoanAmount
+test['LoanAmount'].value_counts()
+test['LoanAmount']= np.where(test ['LoanAmount'].isnull(),
+     np.nanmedian(test['LoanAmount']),test ['LoanAmount'])
+test['LoanAmount'].isnull().value_counts()
+
+## Impute missing values for Loan_Amount_Term
+test['Loan_Amount_Term'].value_counts()
+test['Loan_Amount_Term']= np.where(test ['Loan_Amount_Term'].isnull(),np.nanmedian(test['Loan_Amount_Term']),test ['Loan_Amount_Term'])
+test['Loan_Amount_Term'].isnull().sum()
+
+## Impute missing values for Credit_History
+test['Credit_History'].value_counts()
+test['Credit_History']= np.where(test ['Credit_History'].isnull(),1.0,test ['Credit_History'])
+
+from sklearn.preprocessing import LabelEncoder
+
+LE=LabelEncoder()
+test['Gender']= LE.fit_transform(test['Gender'])
+test['Gender'].value_counts()
+
+test['Married']= LE.fit_transform(test['Married'])
+test['Married'].value_counts()
+
+test['Education']= LE.fit_transform(test['Education'])
+test['Education'].value_counts()
+
+test['Self_Employed']= LE.fit_transform(test['Self_Employed'])
+test['Self_Employed'].value_counts()
+
+test['Property_Area']= LE.fit_transform(test['Property_Area'])
+test['Property_Area'].value_counts()
+
+test_missing_data= test.isnull().sum()
+
+test_data = test.iloc[:,1:11]
+test_data['Loan_Status']= RF.predict(test_data)
+test_data.to_csv('output.csv')
